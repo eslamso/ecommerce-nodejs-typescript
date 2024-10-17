@@ -9,7 +9,7 @@ const dbConnection_1 = __importDefault(require("./config/dbConnection"));
 const app_1 = __importDefault(require("./app"));
 const dbUrl = process.env.DATA_BASE;
 (0, dbConnection_1.default)(dbUrl);
-const port = 5000;
+const port = Number(process.env.PORT);
 app_1.default.listen(port, () => {
     console.log(`the server is running on port ${port}`);
 });

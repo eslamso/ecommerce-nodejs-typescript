@@ -8,18 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_validator_1 = require("express-validator");
-const appError_1 = __importDefault(require("../../utils/appError"));
-const express_async_handler_1 = __importDefault(require("express-async-handler"));
-const validatorMiddleWare = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const errors = (0, express_validator_1.validationResult)(req);
-    if (!errors.isEmpty()) {
-        return next(new appError_1.default("validationErrors", 501, errors.array()));
-    }
-    next();
-}));
-exports.default = validatorMiddleWare;
+exports.calCartPrice = void 0;
+const calCartPrice = (cart) => __awaiter(void 0, void 0, void 0, function* () {
+    let total = 0;
+    cart.cartItems.forEach((item) => {
+        total += item.quantity * item.price;
+    });
+    cart.totalCartPrice = Number(total.toFixed(2));
+    // when the coupon is removed
+    cart.totalCartPriceAfterDiscount = undefined;
+    yield cart.save();
+});
+exports.calCartPrice = calCartPrice;

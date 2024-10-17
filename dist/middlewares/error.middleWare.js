@@ -8,6 +8,12 @@ const devError = (err, res) => {
         stack: err.stack,
     });
 };
+const sendValidationError = (err, res) => {
+    res.status(err.statusCode).json({
+        message: err.message,
+        errors: err.validatorErrors,
+    });
+};
 const sendErrorProduction = (err, res) => {
     res.status(err.statusCode).json({
         success: err.status,
@@ -16,7 +22,10 @@ const sendErrorProduction = (err, res) => {
 };
 const globalErrorHandler = (err, req, res, next) => {
     err.statusCode = err.statusCode || 500;
-    if (process.env.NODE_ENV === "development") {
+    if (err.message === "validationErrors") {
+        sendValidationError(err, res);
+    }
+    else if (process.env.NODE_ENV === "development") {
         devError(err, res);
     }
     else {

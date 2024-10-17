@@ -29,7 +29,8 @@ const userSchema = new mongoose_1.default.Schema({
     passwordChangedAt: Date,
     passwordResetCode: String,
     passwordResetCodeExpires: Date,
-    passwordResetCodeVerified: Boolean,
+    passwordResetVerificationToken: String,
+    passwordResetToken: String,
     role: {
         type: String,
         default: "user",
@@ -45,5 +46,22 @@ const userSchema = new mongoose_1.default.Schema({
         type: Date,
         index: { expireAfterSeconds: 10 },
     },
+    isActivated: {
+        type: Boolean,
+        default: false,
+    },
+    activationCode: String,
+    activationCodeExpiresIn: Date,
+    activationToken: String,
+    myFavorites: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: "Product" }],
+    addresses: [
+        {
+            id: { type: mongoose_1.default.Schema.Types.ObjectId },
+            alias: String,
+            details: String,
+            city: String,
+            postalCode: String,
+        },
+    ],
 }, { timestamps: true });
 exports.default = mongoose_1.default.model("User", userSchema);

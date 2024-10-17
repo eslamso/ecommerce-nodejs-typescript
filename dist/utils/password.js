@@ -12,14 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_validator_1 = require("express-validator");
-const appError_1 = __importDefault(require("../../utils/appError"));
-const express_async_handler_1 = __importDefault(require("express-async-handler"));
-const validatorMiddleWare = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const errors = (0, express_validator_1.validationResult)(req);
-    if (!errors.isEmpty()) {
-        return next(new appError_1.default("validationErrors", 501, errors.array()));
-    }
-    next();
-}));
-exports.default = validatorMiddleWare;
+exports.isCorrectPassword = exports.hashingPassword = void 0;
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const hashingPassword = (password) => __awaiter(void 0, void 0, void 0, function* () {
+    const hashedPassword = yield bcryptjs_1.default.hash(password, 12);
+    return hashedPassword;
+});
+exports.hashingPassword = hashingPassword;
+const isCorrectPassword = (enteredPass, realPass) => __awaiter(void 0, void 0, void 0, function* () {
+    return yield bcryptjs_1.default.compare(enteredPass, realPass);
+});
+exports.isCorrectPassword = isCorrectPassword;
