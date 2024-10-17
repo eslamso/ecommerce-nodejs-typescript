@@ -65,8 +65,8 @@ export const intiPayTabs = catchAsync(
     let shipping_address = customer_details;
 
     let url = {
-      callback: `${req.protocol}://${req.get("host")}/payTabsWebhook`,
-      response: "https://webhook.site/44a2a603-0dbc-48cd-a01b-15b8529cc098",
+      callback: "https://natoursapp-lu63.onrender.com/payTabsWebhook",
+      response: "https://natoursapp-lu63.onrender.com/payTabsWebhook",
     };
 
     let response_URLs = [url.callback, url.response];
@@ -113,6 +113,7 @@ export const intiPayTabs = catchAsync(
 
 export const payTabsWebHook = catchAsync(
   async (req: Request<PaymentParams>, res: Response, next: NextFunction) => {
+    console.log("hello from web hook");
     console.log(req.body);
     res.status(200).json({
       success: true,
