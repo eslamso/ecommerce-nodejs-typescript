@@ -1,0 +1,1 @@
+{"root":["./src/app.ts","./src/server.ts","./src/controllers/mountroutes.ts","./src/controllers/usercontrollers.ts","./src/dtos/userdto/createuser.dto.ts","./src/services/userservices.ts","./src/types/types.d.ts"],"version":"5.6.2"}
