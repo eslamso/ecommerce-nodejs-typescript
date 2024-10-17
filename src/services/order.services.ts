@@ -65,7 +65,7 @@ export const intiPayTabs = catchAsync(
     let shipping_address = customer_details;
 
     let url = {
-      callback: "https://webhook.site/44a2a603-0dbc-48cd-a01b-15b8529cc098",
+      callback: `${req.protocol}://${req.get("host")}/payTabsWebhook`,
       response: "https://webhook.site/44a2a603-0dbc-48cd-a01b-15b8529cc098",
     };
 
