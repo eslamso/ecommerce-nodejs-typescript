@@ -3,7 +3,12 @@ import catchAsync from "express-async-handler";
 import PayTabs from "paytabs_pt2";
 import { PaymentParams } from "../dtos/order.dto";
 import Cart from "../models/cart.model";
+import User from "../models/user.model";
+import Order from "../models/order.model";
+import Product from "../models/product.model";
+
 import AppError from "../utils/appError";
+import { getAll, getOne } from "../utils/handlerFactory";
 export const intiPayTabs = catchAsync(
   async (req: Request<PaymentParams>, res: Response, next: NextFunction) => {
     // 1- Setting paytabs configuration
@@ -112,12 +117,51 @@ export const intiPayTabs = catchAsync(
 );
 
 export const payTabsWebHook = catchAsync(
-  async (req: Request<PaymentParams>, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     console.log("hello from web hook");
     console.log(req.body);
-    res.status(200).json({
-      success: true,
-      message: "webhook received",
-    });
+
+    const cart = await Cart.findById(req.body.cart_id);
+    const user = await User.findOne({ email: req.body.customer_details.email });
+    const status = req.body.payment_result.response_status;
+    if (status === "A") {
+      // Handle successful payment
+      // logic here (e.g., update database)
+      const price = req.body.cart_amount;
+      const order = await Order.create({
+        user: user!._id,
+        cartItems: cart!.cartItems,
+        totalOrderPrice: price,
+        isPaid: true,
+        PaidAt: Date.now(),
+        paymentMethod: "online",
+        shippingAddress: {
+          city: req.body.shipping_address.city,
+          details: req.body.shipping_address.street1,
+          state: req.body.shipping_address.state,
+          postalCode: req.body.shipping_address.zip,
+        },
+      });
+      if (order) {
+        cart!.cartItems.forEach(async (item) => {
+          await Product.findByIdAndUpdate(item.product, {
+            $inc: { quantity: -item.quantity!, sold: +item.quantity! },
+          });
+        });
+        //5-remove cart
+        await Cart.deleteOne({ _id: cart!._id });
+      }
+      res.status(200).json({
+        success: true,
+        message: "payment is created successfully",
+      });
+    } else {
+      res.status(400).json({
+        success: true,
+        message: "payment is failed",
+      });
+    }
   }
 );
+export const getAllOrders = getAll(Order, "Order");
+export const getOneOrder = getOne(Order, "Order");

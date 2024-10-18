@@ -12,11 +12,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.payTabsWebHook = exports.intiPayTabs = void 0;
+exports.getOneOrder = exports.getAllOrders = exports.payTabsWebHook = exports.intiPayTabs = void 0;
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const paytabs_pt2_1 = __importDefault(require("paytabs_pt2"));
 const cart_model_1 = __importDefault(require("../models/cart.model"));
+const user_model_1 = __importDefault(require("../models/user.model"));
+const order_model_1 = __importDefault(require("../models/order.model"));
+const product_model_1 = __importDefault(require("../models/product.model"));
 const appError_1 = __importDefault(require("../utils/appError"));
+const handlerFactory_1 = require("../utils/handlerFactory");
 exports.intiPayTabs = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f, _g;
     // 1- Setting paytabs configuration
@@ -104,8 +108,47 @@ exports.intiPayTabs = (0, express_async_handler_1.default)((req, res, next) => _
 exports.payTabsWebHook = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("hello from web hook");
     console.log(req.body);
-    res.status(200).json({
-        success: true,
-        message: "webhook received",
-    });
+    const cart = yield cart_model_1.default.findById(req.body.cart_id);
+    const user = yield user_model_1.default.findOne({ email: req.body.customer_details.email });
+    const status = req.body.payment_result.response_status;
+    if (status === "A") {
+        // Handle successful payment
+        // logic here (e.g., update database)
+        const price = req.body.cart_amount;
+        const order = yield order_model_1.default.create({
+            user: user._id,
+            cartItems: cart.cartItems,
+            totalOrderPrice: price,
+            isPaid: true,
+            PaidAt: Date.now(),
+            paymentMethod: "online",
+            shippingAddress: {
+                city: req.body.shipping_address.city,
+                details: req.body.shipping_address.street1,
+                state: req.body.shipping_address.state,
+                postalCode: req.body.shipping_address.zip,
+            },
+        });
+        if (order) {
+            cart.cartItems.forEach((item) => __awaiter(void 0, void 0, void 0, function* () {
+                yield product_model_1.default.findByIdAndUpdate(item.product, {
+                    $inc: { quantity: -item.quantity, sold: +item.quantity },
+                });
+            }));
+            //5-remove cart
+            yield cart_model_1.default.deleteOne({ _id: cart._id });
+        }
+        res.status(200).json({
+            success: true,
+            message: "payment is created successfully",
+        });
+    }
+    else {
+        res.status(400).json({
+            success: true,
+            message: "payment is failed",
+        });
+    }
 }));
+exports.getAllOrders = (0, handlerFactory_1.getAll)(order_model_1.default, "Order");
+exports.getOneOrder = (0, handlerFactory_1.getOne)(order_model_1.default, "Order");
