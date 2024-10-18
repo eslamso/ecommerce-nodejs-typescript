@@ -76,7 +76,7 @@ exports.intiPayTabs = (0, express_async_handler_1.default)((req, res, next) => _
     let shipping_address = customer_details;
     let url = {
         callback: "https://natoursapp-lu63.onrender.com/payTabsWebhook",
-        response: "https://natoursapp-lu63.onrender.com/payTabsWebhook",
+        response: "https://webhook.site/44a2a603-0dbc-48cd-a01b-15b8529cc098",
     };
     let response_URLs = [url.callback, url.response];
     let lang = "ar";

@@ -71,7 +71,7 @@ export const intiPayTabs = catchAsync(
 
     let url = {
       callback: "https://natoursapp-lu63.onrender.com/payTabsWebhook",
-      response: "https://natoursapp-lu63.onrender.com/payTabsWebhook",
+      response: "https://webhook.site/44a2a603-0dbc-48cd-a01b-15b8529cc098",
     };
 
     let response_URLs = [url.callback, url.response];
