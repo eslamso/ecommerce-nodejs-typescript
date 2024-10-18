@@ -112,6 +112,8 @@ exports.payTabsWebHook = (0, express_async_handler_1.default)((req, res, next) =
     const user = yield user_model_1.default.findOne({ email: req.body.customer_details.email });
     const status = req.body.payment_result.response_status;
     if (status === "A") {
+        console.log(cart, user);
+        console.log("success payment");
         // Handle successful payment
         // logic here (e.g., update database)
         const price = req.body.cart_amount;
