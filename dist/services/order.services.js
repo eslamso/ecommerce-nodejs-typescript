@@ -108,6 +108,8 @@ exports.intiPayTabs = (0, express_async_handler_1.default)((req, res, next) => _
 exports.payTabsWebHook = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("hello from web hook");
     console.log(req.body);
+    console.log("query:", req.query);
+    console.log("params:", req.params);
     const cart = yield cart_model_1.default.findById(req.body.cart_id);
     const user = yield user_model_1.default.findOne({ email: req.body.customer_details.email });
     const status = req.body.payment_result.response_status;
@@ -123,13 +125,13 @@ exports.payTabsWebHook = (0, express_async_handler_1.default)((req, res, next) =
             PaidAt: Date.now(),
             paymentMethod: "online",
             shippingAddress: {
-                city: req.body.shipping_address.city,
-                details: req.body.shipping_address.street1,
-                state: req.body.shipping_address.state,
-                postalCode: req.body.shipping_address.zip,
+                city: req.body.shipping_details.city,
+                details: req.body.shipping_details.street1,
+                state: req.body.shipping_details.state,
+                postalCode: req.body.shipping_details.zip,
             },
         });
-        console.log(cart, user, order);
+        //console.log(cart, user, order);
         console.log("success payment");
         cart.cartItems.forEach((item) => __awaiter(void 0, void 0, void 0, function* () {
             yield product_model_1.default.findByIdAndUpdate(item.product, {

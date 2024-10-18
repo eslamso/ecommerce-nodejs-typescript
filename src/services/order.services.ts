@@ -120,6 +120,8 @@ export const payTabsWebHook = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     console.log("hello from web hook");
     console.log(req.body);
+    console.log("query:", req.query);
+    console.log("params:", req.params);
 
     const cart = await Cart.findById(req.body.cart_id);
     const user = await User.findOne({ email: req.body.customer_details.email });
@@ -136,13 +138,13 @@ export const payTabsWebHook = catchAsync(
         PaidAt: Date.now(),
         paymentMethod: "online",
         shippingAddress: {
-          city: req.body.shipping_address.city,
-          details: req.body.shipping_address.street1,
-          state: req.body.shipping_address.state,
-          postalCode: req.body.shipping_address.zip,
+          city: req.body.shipping_details.city,
+          details: req.body.shipping_details.street1,
+          state: req.body.shipping_details.state,
+          postalCode: req.body.shipping_details.zip,
         },
       });
-      console.log(cart, user, order);
+      //console.log(cart, user, order);
       console.log("success payment");
       cart!.cartItems.forEach(async (item) => {
         await Product.findByIdAndUpdate(item.product, {
