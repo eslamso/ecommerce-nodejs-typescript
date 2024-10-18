@@ -125,8 +125,6 @@ export const payTabsWebHook = catchAsync(
     const user = await User.findOne({ email: req.body.customer_details.email });
     const status = req.body.payment_result.response_status;
     if (status === "A") {
-      console.log(cart, user);
-      console.log("success payment");
       // Handle successful payment
       // logic here (e.g., update database)
       const price = req.body.cart_amount;
@@ -144,23 +142,18 @@ export const payTabsWebHook = catchAsync(
           postalCode: req.body.shipping_address.zip,
         },
       });
-      if (order) {
-        cart!.cartItems.forEach(async (item) => {
-          await Product.findByIdAndUpdate(item.product, {
-            $inc: { quantity: -item.quantity!, sold: +item.quantity! },
-          });
+      console.log(cart, user, order);
+      console.log("success payment");
+      cart!.cartItems.forEach(async (item) => {
+        await Product.findByIdAndUpdate(item.product, {
+          $inc: { quantity: -item.quantity!, sold: +item.quantity! },
         });
-        //5-remove cart
-        await Cart.deleteOne({ _id: cart!._id });
-      }
+      });
+      //5-remove cart
+      await Cart.deleteOne({ _id: cart!._id });
       res.status(200).json({
         success: true,
         message: "payment is created successfully",
-      });
-    } else {
-      res.status(400).json({
-        success: true,
-        message: "payment is failed",
       });
     }
   }

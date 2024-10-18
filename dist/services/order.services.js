@@ -112,8 +112,6 @@ exports.payTabsWebHook = (0, express_async_handler_1.default)((req, res, next) =
     const user = yield user_model_1.default.findOne({ email: req.body.customer_details.email });
     const status = req.body.payment_result.response_status;
     if (status === "A") {
-        console.log(cart, user);
-        console.log("success payment");
         // Handle successful payment
         // logic here (e.g., update database)
         const price = req.body.cart_amount;
@@ -131,24 +129,18 @@ exports.payTabsWebHook = (0, express_async_handler_1.default)((req, res, next) =
                 postalCode: req.body.shipping_address.zip,
             },
         });
-        if (order) {
-            cart.cartItems.forEach((item) => __awaiter(void 0, void 0, void 0, function* () {
-                yield product_model_1.default.findByIdAndUpdate(item.product, {
-                    $inc: { quantity: -item.quantity, sold: +item.quantity },
-                });
-            }));
-            //5-remove cart
-            yield cart_model_1.default.deleteOne({ _id: cart._id });
-        }
+        console.log(cart, user, order);
+        console.log("success payment");
+        cart.cartItems.forEach((item) => __awaiter(void 0, void 0, void 0, function* () {
+            yield product_model_1.default.findByIdAndUpdate(item.product, {
+                $inc: { quantity: -item.quantity, sold: +item.quantity },
+            });
+        }));
+        //5-remove cart
+        yield cart_model_1.default.deleteOne({ _id: cart._id });
         res.status(200).json({
             success: true,
             message: "payment is created successfully",
-        });
-    }
-    else {
-        res.status(400).json({
-            success: true,
-            message: "payment is failed",
         });
     }
 }));
