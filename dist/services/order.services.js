@@ -12,28 +12,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getOneOrder = exports.getAllOrders = exports.payTabsWebHook = exports.intiPayTabs = void 0;
+exports.updateOrderToDeliver = exports.getOneOrder = exports.getAllOrders = exports.payTabsWebHook = exports.createPayTabsPaymentLink = void 0;
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
-const paytabs_pt2_1 = __importDefault(require("paytabs_pt2"));
 const cart_model_1 = __importDefault(require("../models/cart.model"));
 const user_model_1 = __importDefault(require("../models/user.model"));
 const order_model_1 = __importDefault(require("../models/order.model"));
 const product_model_1 = __importDefault(require("../models/product.model"));
 const appError_1 = __importDefault(require("../utils/appError"));
 const handlerFactory_1 = require("../utils/handlerFactory");
-exports.intiPayTabs = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const payTabs_1 = require("../utils/payTabs");
+exports.createPayTabsPaymentLink = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f, _g;
     // 1- Setting paytabs configuration
-    let profileID = process.env.PROFILE_ID, serverKey = process.env.SERVER_KEY, region = process.env.REGION;
-    paytabs_pt2_1.default.setConfig(profileID, serverKey, region);
-    // 2- Initiating paytabs payments
-    let paymentMethods = ["all"];
-    let transaction = {
-        type: "sale",
-        class: "ecom",
-    };
-    //1- get cart with cart Id
-    //app settings
+    (0, payTabs_1.PayTabsSettings)();
+    //2- get cart with cart Id
     const taxPrice = 0;
     const shippingPrice = 0;
     const myCart = yield cart_model_1.default.findById(req.params.cartId);
@@ -45,6 +37,12 @@ exports.intiPayTabs = (0, express_async_handler_1.default)((req, res, next) => _
         ? myCart.totalCartPriceAfterDiscount
         : myCart.totalCartPrice;
     const totalCartPrice = cartPrice + taxPrice + shippingPrice;
+    // 2- Initiating paytabs payments
+    let paymentMethods = ["all"];
+    let transaction = {
+        type: "sale",
+        class: "ecom",
+    };
     let cart = {
         id: req.params.cartId,
         currency: "EGP",
@@ -61,7 +59,10 @@ exports.intiPayTabs = (0, express_async_handler_1.default)((req, res, next) => _
         country: "EG",
         zip: (_g = req.user) === null || _g === void 0 ? void 0 : _g.addresses[0].postalCode,
     };
-    let transaction_details = [transaction.type, transaction.class];
+    let transaction_details = [
+        transaction.type,
+        transaction.class,
+    ];
     let cart_details = [cart.id, cart.currency, cart.amount, cart.description];
     let customer_details = [
         customer.name,
@@ -82,19 +83,10 @@ exports.intiPayTabs = (0, express_async_handler_1.default)((req, res, next) => _
     let lang = "ar";
     let frameMode = true;
     // Wrap createPaymentPage in a Promise
-    const createPaymentPageAsync = () => new Promise((resolve, reject) => {
-        paytabs_pt2_1.default.createPaymentPage(paymentMethods, transaction_details, cart_details, customer_details, shipping_address, response_URLs, lang, function (results) {
-            if (results.redirect_url) {
-                resolve(results);
-            }
-            else {
-                reject(new Error("Payment page creation failed"));
-            }
-        }, frameMode);
-    });
+    const createPaymentPage = (0, payTabs_1.createPayTabsPaymentPage)(paymentMethods, transaction_details, cart_details, customer_details, shipping_address, response_URLs, lang, frameMode);
     try {
         // Wait for payment page creation
-        const result = yield createPaymentPageAsync();
+        const result = yield createPaymentPage;
         // Respond with the result
         res.status(200).json({
             success: true,
@@ -110,7 +102,12 @@ exports.payTabsWebHook = (0, express_async_handler_1.default)((req, res, next) =
     console.log(req.body);
     console.log("query:", req.query);
     console.log("params:", req.params);
+    console.log("req.headers:", req.headers);
     const cart = yield cart_model_1.default.findById(req.body.cart_id);
+    if (!cart) {
+        return next(new appError_1.default("cart not found", 404));
+    }
+    console.log("cart", cart);
     const user = yield user_model_1.default.findOne({ email: req.body.customer_details.email });
     const status = req.body.payment_result.response_status;
     if (status === "A") {
@@ -147,4 +144,32 @@ exports.payTabsWebHook = (0, express_async_handler_1.default)((req, res, next) =
     }
 }));
 exports.getAllOrders = (0, handlerFactory_1.getAll)(order_model_1.default, "Order");
-exports.getOneOrder = (0, handlerFactory_1.getOne)(order_model_1.default, "Order");
+exports.getOneOrder = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    let filter = {};
+    if (((_a = req.user) === null || _a === void 0 ? void 0 : _a.role) === "user") {
+        filter = { user: req.user._id };
+    }
+    filter._id = req.params.id;
+    const order = yield order_model_1.default.findOne(filter);
+    if (!order) {
+        return next(new appError_1.default("no order found with that id or that order not be long to you", 404));
+    }
+    res.status(200).json({
+        success: true,
+        order,
+    });
+}));
+exports.updateOrderToDeliver = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const order = yield order_model_1.default.findById(req.params.id);
+    if (!order) {
+        return next(new appError_1.default("no order found with that id", 404));
+    }
+    order.isDelivered = true;
+    order.deliverAt = new Date();
+    yield order.save();
+    res.status(200).json({
+        success: true,
+        order,
+    });
+}));

@@ -28,8 +28,10 @@ export const getAll = <P, B, Q extends QueryObject, T>(
   catchAsync(
     async (req: Request<P, {}, B, Q>, res: Response, next: NextFunction) => {
       //console.log(process.env.NODE_ENV);
+      let filter = {};
+      if (req.filterObj) filter = req.filterObj;
       const docsCount = await Model.countDocuments();
-      const query = new ApiFeatures(Model.find({}), req.query)
+      const query = new ApiFeatures(Model.find(filter), req.query)
         .filter()
         .paginate(docsCount)
         .sorting()
@@ -121,3 +123,9 @@ export const deleteOne = <P extends PublicParams, B extends PublicBody, Q, T>(
       });
     }
   );
+export const findAllFilterObj = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    if (req.user?.role === "user") req.filterObj = { user: req.user.id };
+    next();
+  }
+);

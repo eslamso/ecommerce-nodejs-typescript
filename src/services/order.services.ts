@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import catchAsync from "express-async-handler";
-import PayTabs from "paytabs_pt2";
 import { PaymentParams } from "../dtos/order.dto";
 import Cart from "../models/cart.model";
 import User from "../models/user.model";
@@ -9,23 +8,24 @@ import Product from "../models/product.model";
 
 import AppError from "../utils/appError";
 import { getAll, getOne } from "../utils/handlerFactory";
-export const intiPayTabs = catchAsync(
+import { createPayTabsPaymentPage, PayTabsSettings } from "../utils/payTabs";
+import {
+  PaymentResultBody,
+  payTabs_Cart,
+  payTabs_Customer,
+  payTabs_lang,
+  payTabs_PaymentMethods,
+  payTabs_Response_Urls,
+  payTabs_Transaction,
+  payTabs_Transaction_details,
+  payTabs_Urls,
+} from "../types/payTabs";
+import { PublicObject } from "../types/types";
+export const createPayTabsPaymentLink = catchAsync(
   async (req: Request<PaymentParams>, res: Response, next: NextFunction) => {
     // 1- Setting paytabs configuration
-    let profileID = process.env.PROFILE_ID,
-      serverKey = process.env.SERVER_KEY,
-      region = process.env.REGION;
-
-    PayTabs.setConfig(profileID, serverKey, region);
-
-    // 2- Initiating paytabs payments
-    let paymentMethods = ["all"];
-    let transaction = {
-      type: "sale",
-      class: "ecom",
-    };
-    //1- get cart with cart Id
-    //app settings
+    PayTabsSettings();
+    //2- get cart with cart Id
     const taxPrice = 0;
     const shippingPrice = 0;
     const myCart = await Cart.findById(req.params.cartId);
@@ -38,23 +38,32 @@ export const intiPayTabs = catchAsync(
       : myCart.totalCartPrice;
     const totalCartPrice = cartPrice! + taxPrice + shippingPrice;
 
-    let cart = {
+    // 2- Initiating paytabs payments
+    let paymentMethods: payTabs_PaymentMethods = ["all"];
+    let transaction: payTabs_Transaction = {
+      type: "sale",
+      class: "ecom",
+    };
+    let cart: payTabs_Cart = {
       id: req.params.cartId,
       currency: "EGP",
       amount: totalCartPrice,
       description: "description perfecto",
     };
-    let customer = {
-      name: req.user?.name,
-      email: req.user?.email,
-      phone: req.user?.phoneNumber,
+    let customer: payTabs_Customer = {
+      name: req.user?.name!,
+      email: req.user?.email!,
+      phone: req.user?.phoneNumber!,
       street1: req.user?.addresses![0].alias,
       city: req.user?.addresses![0].city,
       state: req.user?.addresses![0].details,
       country: "EG",
       zip: req.user?.addresses![0].postalCode,
     };
-    let transaction_details = [transaction.type, transaction.class];
+    let transaction_details: payTabs_Transaction_details = [
+      transaction.type,
+      transaction.class,
+    ];
     let cart_details = [cart.id, cart.currency, cart.amount, cart.description];
     let customer_details = [
       customer.name,
@@ -69,41 +78,30 @@ export const intiPayTabs = catchAsync(
 
     let shipping_address = customer_details;
 
-    let url = {
+    let url: payTabs_Urls = {
       callback: "https://natoursapp-lu63.onrender.com/payTabsWebhook",
       response: "https://webhook.site/44a2a603-0dbc-48cd-a01b-15b8529cc098",
     };
 
-    let response_URLs = [url.callback, url.response];
+    let response_URLs: payTabs_Response_Urls = [url.callback, url.response];
 
-    let lang = "ar";
+    let lang: payTabs_lang = "ar";
     let frameMode = true;
 
     // Wrap createPaymentPage in a Promise
-    const createPaymentPageAsync = () =>
-      new Promise((resolve, reject) => {
-        PayTabs.createPaymentPage(
-          paymentMethods,
-          transaction_details,
-          cart_details,
-          customer_details,
-          shipping_address,
-          response_URLs,
-          lang,
-          function (results) {
-            if (results.redirect_url) {
-              resolve(results);
-            } else {
-              reject(new Error("Payment page creation failed"));
-            }
-          },
-          frameMode
-        );
-      });
-
+    const createPaymentPage = createPayTabsPaymentPage(
+      paymentMethods,
+      transaction_details,
+      cart_details,
+      customer_details,
+      shipping_address,
+      response_URLs,
+      lang,
+      frameMode
+    );
     try {
       // Wait for payment page creation
-      const result = await createPaymentPageAsync();
+      const result = await createPaymentPage;
 
       // Respond with the result
       res.status(200).json({
@@ -117,13 +115,22 @@ export const intiPayTabs = catchAsync(
 );
 
 export const payTabsWebHook = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (
+    req: Request<{}, {}, PaymentResultBody>,
+    res: Response,
+    next: NextFunction
+  ) => {
     console.log("hello from web hook");
     console.log(req.body);
     console.log("query:", req.query);
     console.log("params:", req.params);
+    console.log("req.headers:", req.headers);
 
     const cart = await Cart.findById(req.body.cart_id);
+    if (!cart) {
+      return next(new AppError("cart not found", 404));
+    }
+    console.log("cart", cart);
     const user = await User.findOne({ email: req.body.customer_details.email });
     const status = req.body.payment_result.response_status;
     if (status === "A") {
@@ -161,4 +168,41 @@ export const payTabsWebHook = catchAsync(
   }
 );
 export const getAllOrders = getAll(Order, "Order");
-export const getOneOrder = getOne(Order, "Order");
+export const getOneOrder = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    let filter: PublicObject = {};
+    if (req.user?.role === "user") {
+      filter = { user: req.user._id };
+    }
+    filter._id = req.params.id;
+    const order = await Order.findOne(filter);
+    if (!order) {
+      return next(
+        new AppError(
+          "no order found with that id or that order not be long to you",
+          404
+        )
+      );
+    }
+    res.status(200).json({
+      success: true,
+      order,
+    });
+  }
+);
+
+export const updateOrderToDeliver = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return next(new AppError("no order found with that id", 404));
+    }
+    order.isDelivered = true;
+    order.deliverAt = new Date();
+    await order.save();
+    res.status(200).json({
+      success: true,
+      order,
+    });
+  }
+);

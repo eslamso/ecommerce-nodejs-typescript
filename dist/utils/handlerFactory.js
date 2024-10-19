@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteOne = exports.updateOne = exports.getOne = exports.getAll = exports.createOne = void 0;
+exports.findAllFilterObj = exports.deleteOne = exports.updateOne = exports.getOne = exports.getAll = exports.createOne = void 0;
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const apiFeatures_1 = require("./apiFeatures");
 const appError_1 = __importDefault(require("./appError"));
@@ -26,8 +26,11 @@ const createOne = (Model, modelName) => (0, express_async_handler_1.default)((re
 exports.createOne = createOne;
 const getAll = (Model, modelName) => (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     //console.log(process.env.NODE_ENV);
+    let filter = {};
+    if (req.filterObj)
+        filter = req.filterObj;
     const docsCount = yield Model.countDocuments();
-    const query = new apiFeatures_1.ApiFeatures(Model.find({}), req.query)
+    const query = new apiFeatures_1.ApiFeatures(Model.find(filter), req.query)
         .filter()
         .paginate(docsCount)
         .sorting()
@@ -85,3 +88,9 @@ const deleteOne = (Model, modelName) => (0, express_async_handler_1.default)((re
     });
 }));
 exports.deleteOne = deleteOne;
+exports.findAllFilterObj = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    if (((_a = req.user) === null || _a === void 0 ? void 0 : _a.role) === "user")
+        req.filterObj = { user: req.user.id };
+    next();
+}));

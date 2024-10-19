@@ -109,7 +109,7 @@ export const logIn = catchAsync(
     res: Response,
     next: NextFunction
   ) => {
-    console.log(typeof req.query.limit, typeof req.query.page);
+    //console.log(typeof req.query.limit, typeof req.query.page);
     const { email, password } = req.body;
     //1- find user by email
     const user = await User.findOne({ email });

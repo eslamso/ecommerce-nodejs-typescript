@@ -1,4 +1,11 @@
 import { PopulateOptions } from "mongoose";
+declare global {
+  namespace Express {
+    interface Request {
+      filterObj?: PublicObject;
+    }
+  }
+}
 
 export interface QueryObject {
   [index: string]: any;

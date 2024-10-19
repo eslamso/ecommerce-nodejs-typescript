@@ -71,7 +71,7 @@ exports.resendActivationCode = (0, express_async_handler_1.default)((req, res, n
     });
 }));
 exports.logIn = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(typeof req.query.limit, typeof req.query.page);
+    //console.log(typeof req.query.limit, typeof req.query.page);
     const { email, password } = req.body;
     //1- find user by email
     const user = yield user_model_1.default.findOne({ email });
