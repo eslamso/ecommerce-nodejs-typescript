@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import Product, { IProduct } from "../models/product.model";
+import Review, { IReview } from "../models/review.model";
+
 import catchAsync from "express-async-handler";
 import { uploadSingleImage } from "../middlewares/uploadImage.middleWare";
 import {
@@ -8,7 +10,11 @@ import {
   imagePath,
   sharpConfig,
 } from "../utils/image";
-import { createProductBody, getAllProductsQuery } from "../dtos/product.dto";
+import {
+  createProductBody,
+  getAllProductsQuery,
+  productParams,
+} from "../dtos/product.dto";
 import {
   createOne,
   deleteOne,
@@ -51,4 +57,8 @@ export const updateProduct = updateOne<{}, {}, {}, IProduct>(
 export const deleteProduct = deleteOne<{}, {}, {}, IProduct>(
   Product,
   "Product"
+);
+export const getAllReviewsOnProduct = getAll<{}, {}, {}, IReview>(
+  Review,
+  "Review"
 );

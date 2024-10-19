@@ -1,6 +1,5 @@
 import fs from "fs";
 import "colors";
-import dotenv from "dotenv";
 import Product from "../../models/product.model";
 import dbConnection from "../../config/dbConnection";
 

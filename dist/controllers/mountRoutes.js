@@ -10,6 +10,7 @@ const product_controller_1 = __importDefault(require("./product.controller"));
 const coupon_controller_1 = __importDefault(require("./coupon.controller"));
 const cart_controller_1 = __importDefault(require("./cart.controller"));
 const order_controller_1 = __importDefault(require("./order.controller"));
+const review_controller_1 = __importDefault(require("./review.controller"));
 const mountRoutes = (app) => {
     app.use("/api/v1/user", user_controller_1.default);
     app.use("/api/v1/auth", auth_controller_1.default);
@@ -18,5 +19,6 @@ const mountRoutes = (app) => {
     app.use("/api/v1/coupon", coupon_controller_1.default);
     app.use("/api/v1/cart", cart_controller_1.default);
     app.use("/api/v1/order", order_controller_1.default);
+    app.use("/api/v1/review", review_controller_1.default);
 };
 exports.default = mountRoutes;

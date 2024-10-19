@@ -40,8 +40,8 @@ const orderSchema = new mongoose_1.default.Schema({
     isDelivered: { type: Boolean, default: false },
     deliverAt: Date,
     deliveryDate: {
-        type: Number,
-        default: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days from now
+        type: Date,
+        default: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
     },
 }, { timestamps: true });
 exports.default = mongoose_1.default.model("Order", orderSchema);

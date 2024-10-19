@@ -12,8 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteProduct = exports.updateProduct = exports.getProduct = exports.getAllProducts = exports.createProduct = exports.resizeProductImage = exports.uploadProductImage = void 0;
+exports.getAllReviewsOnProduct = exports.deleteProduct = exports.updateProduct = exports.getProduct = exports.getAllProducts = exports.createProduct = exports.resizeProductImage = exports.uploadProductImage = void 0;
 const product_model_1 = __importDefault(require("../models/product.model"));
+const review_model_1 = __importDefault(require("../models/review.model"));
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const uploadImage_middleWare_1 = require("../middlewares/uploadImage.middleWare");
 const image_1 = require("../utils/image");
@@ -34,3 +35,4 @@ exports.getAllProducts = (0, handlerFactory_1.getAll)(product_model_1.default, "
 exports.getProduct = (0, handlerFactory_1.getOne)(product_model_1.default, "Product");
 exports.updateProduct = (0, handlerFactory_1.updateOne)(product_model_1.default, "Product");
 exports.deleteProduct = (0, handlerFactory_1.deleteOne)(product_model_1.default, "Product");
+exports.getAllReviewsOnProduct = (0, handlerFactory_1.getAll)(review_model_1.default, "Review");

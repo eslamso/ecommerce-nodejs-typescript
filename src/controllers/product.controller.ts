@@ -3,6 +3,7 @@ import {
   createProduct,
   deleteProduct,
   getAllProducts,
+  getAllReviewsOnProduct,
   getProduct,
   resizeProductImage,
   updateProduct,
@@ -12,8 +13,10 @@ import { protect, restrictTo } from "../services/auth.services";
 import {
   createProductValidator,
   deleteProductValidator,
+  productIdValidator,
   updateProductValidator,
 } from "../middlewares/validators/product.validator";
+import { settingFilterObj } from "../middlewares/settingFilters.middleWare";
 const productRouter = express.Router();
 productRouter
   .route("/")
@@ -44,10 +47,13 @@ productRouter.delete(
   deleteProduct
 );
 productRouter.get(
-  "/:id",
+  "/reviews/:productId",
   protect,
-  restrictTo("manager", "admin"),
-  deleteProductValidator,
-  getProduct
+  productIdValidator,
+  settingFilterObj,
+  getAllReviewsOnProduct
 );
+
+productRouter.get("/:id", protect, deleteProductValidator, getProduct);
+
 export default productRouter;

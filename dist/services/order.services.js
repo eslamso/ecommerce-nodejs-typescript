@@ -137,7 +137,7 @@ exports.payTabsWebHook = (0, express_async_handler_1.default)((req, res, next) =
             },
         });
         //console.log(cart, user, order);
-        console.log("success payment");
+        console.log("success payment".bgGreen);
         cart.cartItems.forEach((item) => __awaiter(void 0, void 0, void 0, function* () {
             yield product_model_1.default.findByIdAndUpdate(item.product, {
                 $inc: { quantity: -item.quantity, sold: +item.quantity },

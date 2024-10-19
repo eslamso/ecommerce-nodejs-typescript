@@ -135,3 +135,8 @@ export const deleteProductValidator: RequestHandler[] = [
 
   validatorMiddleWare,
 ];
+export const productIdValidator: RequestHandler[] = [
+  param("productId").isMongoId().withMessage("invalid productId"),
+
+  validatorMiddleWare,
+];

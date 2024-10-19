@@ -7,7 +7,7 @@ import Order from "../models/order.model";
 import Product from "../models/product.model";
 
 import AppError from "../utils/appError";
-import { getAll, getOne } from "../utils/handlerFactory";
+import { getAll } from "../utils/handlerFactory";
 import {
   createPayTabsPaymentPage,
   PayTabsSettings,
@@ -164,7 +164,7 @@ export const payTabsWebHook = catchAsync(
         },
       });
       //console.log(cart, user, order);
-      console.log("success payment");
+      console.log("success payment".bgGreen);
       cart!.cartItems.forEach(async (item) => {
         await Product.findByIdAndUpdate(item.product, {
           $inc: { quantity: -item.quantity!, sold: +item.quantity! },

@@ -6,6 +6,7 @@ import productRouter from "./product.controller";
 import couponRouter from "./coupon.controller";
 import cartRouter from "./cart.controller";
 import orderRouter from "./order.controller";
+import reviewRouter from "./review.controller";
 const mountRoutes = (app: Express) => {
   app.use("/api/v1/user", userRouter);
   app.use("/api/v1/auth", authRouter);
@@ -14,6 +15,7 @@ const mountRoutes = (app: Express) => {
   app.use("/api/v1/coupon", couponRouter);
   app.use("/api/v1/cart", cartRouter);
   app.use("/api/v1/order", orderRouter);
+  app.use("/api/v1/review", reviewRouter);
 };
 
 export default mountRoutes;
