@@ -8,7 +8,11 @@ import Product from "../models/product.model";
 
 import AppError from "../utils/appError";
 import { getAll, getOne } from "../utils/handlerFactory";
-import { createPayTabsPaymentPage, PayTabsSettings } from "../utils/payTabs";
+import {
+  createPayTabsPaymentPage,
+  PayTabsSettings,
+  verifyPayTabsWebHookSignature,
+} from "../utils/payTabs";
 import {
   PaymentResultBody,
   payTabs_Cart,
@@ -24,6 +28,9 @@ import { PublicObject } from "../types/types";
 export const createPayTabsPaymentLink = catchAsync(
   async (req: Request<PaymentParams>, res: Response, next: NextFunction) => {
     // 1- Setting paytabs configuration
+    if (!req.user?.addresses) {
+      return next(new AppError("User must have address", 400));
+    }
     PayTabsSettings();
     //2- get cart with cart Id
     const taxPrice = 0;
@@ -120,6 +127,11 @@ export const payTabsWebHook = catchAsync(
     res: Response,
     next: NextFunction
   ) => {
+    // verify webhook signature
+    const signatureVerification = verifyPayTabsWebHookSignature(req);
+    if (!signatureVerification) {
+      return next(new AppError("illegal attempt", 401));
+    }
     console.log("hello from web hook");
     console.log(req.body);
     console.log("query:", req.query);

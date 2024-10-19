@@ -22,8 +22,11 @@ const appError_1 = __importDefault(require("../utils/appError"));
 const handlerFactory_1 = require("../utils/handlerFactory");
 const payTabs_1 = require("../utils/payTabs");
 exports.createPayTabsPaymentLink = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     // 1- Setting paytabs configuration
+    if (!((_a = req.user) === null || _a === void 0 ? void 0 : _a.addresses)) {
+        return next(new appError_1.default("User must have address", 400));
+    }
     (0, payTabs_1.PayTabsSettings)();
     //2- get cart with cart Id
     const taxPrice = 0;
@@ -50,14 +53,14 @@ exports.createPayTabsPaymentLink = (0, express_async_handler_1.default)((req, re
         description: "description perfecto",
     };
     let customer = {
-        name: (_a = req.user) === null || _a === void 0 ? void 0 : _a.name,
-        email: (_b = req.user) === null || _b === void 0 ? void 0 : _b.email,
-        phone: (_c = req.user) === null || _c === void 0 ? void 0 : _c.phoneNumber,
-        street1: (_d = req.user) === null || _d === void 0 ? void 0 : _d.addresses[0].alias,
-        city: (_e = req.user) === null || _e === void 0 ? void 0 : _e.addresses[0].city,
-        state: (_f = req.user) === null || _f === void 0 ? void 0 : _f.addresses[0].details,
+        name: (_b = req.user) === null || _b === void 0 ? void 0 : _b.name,
+        email: (_c = req.user) === null || _c === void 0 ? void 0 : _c.email,
+        phone: (_d = req.user) === null || _d === void 0 ? void 0 : _d.phoneNumber,
+        street1: (_e = req.user) === null || _e === void 0 ? void 0 : _e.addresses[0].alias,
+        city: (_f = req.user) === null || _f === void 0 ? void 0 : _f.addresses[0].city,
+        state: (_g = req.user) === null || _g === void 0 ? void 0 : _g.addresses[0].details,
         country: "EG",
-        zip: (_g = req.user) === null || _g === void 0 ? void 0 : _g.addresses[0].postalCode,
+        zip: (_h = req.user) === null || _h === void 0 ? void 0 : _h.addresses[0].postalCode,
     };
     let transaction_details = [
         transaction.type,
@@ -98,6 +101,11 @@ exports.createPayTabsPaymentLink = (0, express_async_handler_1.default)((req, re
     }
 }));
 exports.payTabsWebHook = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    // verify webhook signature
+    const signatureVerification = (0, payTabs_1.verifyPayTabsWebHookSignature)(req);
+    if (!signatureVerification) {
+        return next(new appError_1.default("illegal attempt", 401));
+    }
     console.log("hello from web hook");
     console.log(req.body);
     console.log("query:", req.query);

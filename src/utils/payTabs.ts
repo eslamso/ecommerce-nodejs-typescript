@@ -1,3 +1,5 @@
+import crypto from "crypto";
+import { Request } from "express";
 import PayTabs from "paytabs_pt2";
 import {
   payTabs_Cart_details,
@@ -47,3 +49,13 @@ export const createPayTabsPaymentPage = (
       frameMode
     );
   });
+
+export const verifyPayTabsWebHookSignature = (req: Request) => {
+  const signature = req.headers.signature;
+  const data = req.body;
+  const hash = crypto
+    .createHmac("sha256", process.env.SERVER_KEY!)
+    .update(JSON.stringify(data))
+    .digest("hex");
+  return hash === signature;
+};
