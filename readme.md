@@ -37,29 +37,23 @@ This is an **Ecommerce API** built with **Node.js** and **TypeScript** with expr
 
 ## some API Endpoints
 
-**Auth**
-
 - POST /api/v1/auth/register - Register a new user.
 - POST /api/v1/auth/login - Login user and return token.
-  **Products**
 - GET /api/v1/products - Get all products.
 - POST /api/v1/products - Create a new product.
 - GET /api/v1/products/:id - Get a single product.
 - PUT /api/v1/products/:id - Update a product.
 - DELETE /api/v1/products/:id - Delete a product.
-  **Orders**
 - GET /api/v1/orders - Get all orders.
 - POST /api/v1/orders - Create a new order.
 - GET /api/v1/orders/:id - Get a single order.
 - PUT /api/v1/orders/:id - Update an order.
 - DELETE /api/v1/orders/:id - Delete an order.
-  **Categories**
 - GET /api/v1/categories - Get all categories.
 - POST /api/v1/categories - Create a new category.
 - GET /api/v1/categories/:id - Get a single category.
 - PUT /api/v1/categories/:id - Update a category.
 - DELETE /api/v1/categories/:id - Delete a category.
-  **Cart**
 - GET /api/v1/cart - Get user cart.
 - POST /api/v1/cart - Add items to cart.
 - PUT /api/v1/cart - Update cart items.
