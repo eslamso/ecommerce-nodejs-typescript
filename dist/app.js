@@ -11,6 +11,7 @@ const compression_1 = __importDefault(require("compression"));
 const express_rate_limit_1 = require("express-rate-limit");
 const mountRoutes_1 = __importDefault(require("./controllers/mountRoutes"));
 const express_mongo_sanitize_1 = __importDefault(require("express-mongo-sanitize"));
+const helmet_1 = __importDefault(require("helmet"));
 const hpp_1 = __importDefault(require("hpp"));
 const error_middleWare_1 = require("./middlewares/error.middleWare");
 const order_services_1 = require("./services/order.services");
@@ -29,6 +30,7 @@ const limiter = (0, express_rate_limit_1.rateLimit)({
 app.use(limiter);
 app.use((0, express_mongo_sanitize_1.default)());
 app.use((0, hpp_1.default)());
+app.use((0, helmet_1.default)());
 //mount routes
 (0, mountRoutes_1.default)(app);
 app.all("*", (req, res, next) => {

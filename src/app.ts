@@ -6,6 +6,7 @@ import compression from "compression";
 import { rateLimit } from "express-rate-limit";
 import mountRoutes from "./controllers/mountRoutes";
 import mongoSanitize from "express-mongo-sanitize";
+import helmet from "helmet";
 import hpp from "hpp";
 import { globalErrorHandler } from "./middlewares/error.middleWare";
 import { payTabsWebHook } from "./services/order.services";
@@ -25,6 +26,7 @@ const limiter = rateLimit({
 app.use(limiter);
 app.use(mongoSanitize());
 app.use(hpp());
+app.use(helmet());
 //mount routes
 mountRoutes(app);
 app.all("*", (req: Request, res: Response, next: NextFunction) => {

@@ -33,7 +33,7 @@ This is an **Ecommerce API** built with **Node.js** and **TypeScript** with expr
 - **Mongoose**: MongoDB object modeling for Node.js.
 - **JWT**: JSON Web Token for authentication.
 - **bcrypt**: Password hashing.
-- **payTabs payment gateway integration**: simple reliable payment gateway integration that supports payment in egypt
+- **payTabs payment gateway integration**: simple reliable payment gateway integration that supports payment in egypt -**express-validator** : Adding a validation layer before go to data base which it save data base queries
 
 ## some API Endpoints
 
