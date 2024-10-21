@@ -25,7 +25,7 @@ app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "upl
 app.post("/payTabsWebhook", order_services_1.payTabsWebHook);
 const limiter = (0, express_rate_limit_1.rateLimit)({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    limit: 5, // Limit each IP to 5 requests per `window` (here, per 15 minutes)
+    limit: 100, // Limit each IP to 5 requests per `window` (here, per 15 minutes)
 });
 app.use(limiter);
 app.use((0, express_mongo_sanitize_1.default)());

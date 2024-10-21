@@ -22,9 +22,9 @@ const appError_1 = __importDefault(require("../utils/appError"));
 const handlerFactory_1 = require("../utils/handlerFactory");
 const payTabs_1 = require("../utils/payTabs");
 exports.createPayTabsPaymentLink = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
     // 1- Setting paytabs configuration
-    if (!((_a = req.user) === null || _a === void 0 ? void 0 : _a.addresses)) {
+    if (((_b = (_a = req.user) === null || _a === void 0 ? void 0 : _a.addresses) === null || _b === void 0 ? void 0 : _b.length) == 0) {
         return next(new appError_1.default("User must have address", 400));
     }
     (0, payTabs_1.PayTabsSettings)();
@@ -53,14 +53,14 @@ exports.createPayTabsPaymentLink = (0, express_async_handler_1.default)((req, re
         description: "description perfecto",
     };
     let customer = {
-        name: (_b = req.user) === null || _b === void 0 ? void 0 : _b.name,
-        email: (_c = req.user) === null || _c === void 0 ? void 0 : _c.email,
-        phone: (_d = req.user) === null || _d === void 0 ? void 0 : _d.phoneNumber,
-        street1: (_e = req.user) === null || _e === void 0 ? void 0 : _e.addresses[0].alias,
-        city: (_f = req.user) === null || _f === void 0 ? void 0 : _f.addresses[0].city,
-        state: (_g = req.user) === null || _g === void 0 ? void 0 : _g.addresses[0].details,
+        name: (_c = req.user) === null || _c === void 0 ? void 0 : _c.name,
+        email: (_d = req.user) === null || _d === void 0 ? void 0 : _d.email,
+        phone: (_e = req.user) === null || _e === void 0 ? void 0 : _e.phoneNumber,
+        street1: (_f = req.user) === null || _f === void 0 ? void 0 : _f.addresses[0].alias,
+        city: (_g = req.user) === null || _g === void 0 ? void 0 : _g.addresses[0].city,
+        state: (_h = req.user) === null || _h === void 0 ? void 0 : _h.addresses[0].details,
         country: "EG",
-        zip: (_h = req.user) === null || _h === void 0 ? void 0 : _h.addresses[0].postalCode,
+        zip: (_j = req.user) === null || _j === void 0 ? void 0 : _j.addresses[0].postalCode,
     };
     let transaction_details = [
         transaction.type,

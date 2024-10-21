@@ -28,7 +28,7 @@ import { PublicObject } from "../types/types";
 export const createPayTabsPaymentLink = catchAsync(
   async (req: Request<PaymentParams>, res: Response, next: NextFunction) => {
     // 1- Setting paytabs configuration
-    if (!req.user?.addresses) {
+    if (req.user?.addresses?.length == 0) {
       return next(new AppError("User must have address", 400));
     }
     PayTabsSettings();
@@ -57,6 +57,7 @@ export const createPayTabsPaymentLink = catchAsync(
       amount: totalCartPrice,
       description: "description perfecto",
     };
+
     let customer: payTabs_Customer = {
       name: req.user?.name!,
       email: req.user?.email!,
@@ -179,6 +180,66 @@ export const payTabsWebHook = catchAsync(
     }
   }
 );
+
+export const paymentStatus = catchAsync(
+  async (
+    req: Request<{}, {}, PaymentResultBody>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    // verify webhook signature
+    const signatureVerification = verifyPayTabsWebHookSignature(req);
+    if (!signatureVerification) {
+      return next(new AppError("illegal attempt", 401));
+    }
+    console.log("hello from web hook");
+    console.log(req.body);
+    console.log("query:", req.query);
+    console.log("params:", req.params);
+    console.log("req.headers:", req.headers);
+
+    const cart = await Cart.findById(req.body.cart_id);
+    if (!cart) {
+      return next(new AppError("cart not found", 404));
+    }
+    console.log("cart", cart);
+    const user = await User.findOne({ email: req.body.customer_details.email });
+    const status = req.body.payment_result.response_status;
+    if (status === "A") {
+      // Handle successful payment
+      // logic here (e.g., update database)
+      const price = req.body.cart_amount;
+      const order = await Order.create({
+        user: user!._id,
+        cartItems: cart!.cartItems,
+        totalOrderPrice: price,
+        isPaid: true,
+        PaidAt: Date.now(),
+        paymentMethod: "online",
+        shippingAddress: {
+          city: req.body.shipping_details.city,
+          details: req.body.shipping_details.street1,
+          state: req.body.shipping_details.state,
+          postalCode: req.body.shipping_details.zip,
+        },
+      });
+      //console.log(cart, user, order);
+      console.log("success payment".bgGreen);
+      cart!.cartItems.forEach(async (item) => {
+        await Product.findByIdAndUpdate(item.product, {
+          $inc: { quantity: -item.quantity!, sold: +item.quantity! },
+        });
+      });
+      //5-remove cart
+      await Cart.deleteOne({ _id: cart!._id });
+      res.status(200).json({
+        success: true,
+        message: "payment is created successfully",
+      });
+    }
+  }
+);
+
 export const getAllOrders = getAll(Order, "Order");
 export const getOneOrder = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {

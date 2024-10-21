@@ -17,7 +17,11 @@ app.options("*", cors());
 app.use(cookieParser());
 app.use(compression());
 app.use(express.json({ limit: "20Kb" }));
+app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+//app.set("view engine", "ejs");
+//app.set("views", path.join(__dirname, "views")); // Adjust the path if necessary
+//app.post("/payment-status");
 app.post("/payTabsWebhook", payTabsWebHook);
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
