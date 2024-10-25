@@ -235,8 +235,10 @@ exports.updateOrderToDeliver = (0, express_async_handler_1.default)((req, res, n
 exports.verifyReturnUrl = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("hello from verify return url");
     console.log("req.params", req.params);
+    console.log("req.query", req.query);
     console.log("req.body", req.body);
     console.log("req.headers", req.headers);
+    console.log("end of return url 1️⃣");
     res.status(200).json({
         success: true,
         message: "Return url verified successfully",

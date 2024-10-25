@@ -284,8 +284,10 @@ export const verifyReturnUrl = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     console.log("hello from verify return url");
     console.log("req.params", req.params);
+    console.log("req.query", req.query);
     console.log("req.body", req.body);
     console.log("req.headers", req.headers);
+    console.log("end of return url 1️⃣");
     res.status(200).json({
       success: true,
       message: "Return url verified successfully",
