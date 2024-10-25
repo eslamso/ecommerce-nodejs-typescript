@@ -29,6 +29,9 @@ app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "upl
 //app.set("view engine", "ejs");
 //app.set("views", path.join(__dirname, "views")); // Adjust the path if necessary
 //app.post("/payment-status");
+app.get("/", (req, res) => {
+    res.render("home-page");
+});
 app.post("/payTabsWebhook", order_services_1.payTabsWebHook);
 const limiter = (0, express_rate_limit_1.rateLimit)({
     windowMs: 15 * 60 * 1000, // 15 minutes

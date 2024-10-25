@@ -12,6 +12,7 @@ import {
   createPayTabsPaymentPage,
   PayTabsSettings,
   verifyPayTabsWebHookSignature,
+  verifyReturnUrlBody,
 } from "../utils/payTabs";
 import {
   PaymentResultBody,
@@ -288,9 +289,14 @@ export const verifyReturnUrl = catchAsync(
     console.log("req.body", req.body);
     console.log("req.headers", req.headers);
     console.log("end of return url 1️⃣");
-    res.status(200).json({
-      success: true,
-      message: "Return url verified successfully",
-    });
+    let verified = false;
+    if (req.body) {
+      verified = verifyReturnUrlBody(req);
+    }
+    if (verified) {
+      res.render("success-payment");
+    } else {
+      res.render("failed-payment");
+    }
   }
 );

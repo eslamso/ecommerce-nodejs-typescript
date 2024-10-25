@@ -59,3 +59,43 @@ export const verifyPayTabsWebHookSignature = (req: Request) => {
     .digest("hex");
   return hash === signature;
 };
+
+export const verifyReturnUrlBody = (req: Request) => {
+  const serverKey = "SWJ9NMMG69-JK22K96Z9J-W2DJJGHJTL";
+
+  // Mocked raw content received from PayTabs
+  const rawData = req.body;
+
+  // Step 1: Remove 'signature' from the data
+  const { signature, ...dataWithoutSignature } = rawData;
+
+  // Step 2: Remove empty parameters
+  const filteredData = Object.fromEntries(
+    Object.entries(dataWithoutSignature).filter(([_, value]) => value !== "")
+  );
+
+  // Step 3: Sort parameters by keys
+  const sortedData = Object.keys(filteredData)
+    .sort()
+    .reduce((acc, key) => {
+      acc[key] = filteredData[key];
+      return acc;
+    }, {});
+
+  // Step 4: Convert sorted parameters to query string format
+  const queryString = Object.entries(sortedData)
+    .map(
+      ([key, value]) =>
+        `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`
+    )
+    .join("&");
+
+  // Step 5: Generate the HMAC SHA256 hash using the server key
+  const hash = crypto
+    .createHmac("sha256", serverKey)
+    .update(queryString)
+    .digest("hex");
+
+  // Step 6: Compare the generated hash with the received signature
+  return hash === signature;
+};
