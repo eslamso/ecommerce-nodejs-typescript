@@ -21,7 +21,12 @@ app.options("*", (0, cors_1.default)());
 app.use((0, cookie_parser_1.default)());
 app.use((0, compression_1.default)());
 app.use(express_1.default.json({ limit: "20Kb" }));
+app.use(express_1.default.static(path_1.default.join(__dirname, "public")));
 app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "uploads")));
+//app.set("view engine", "ejs");
+//app.set("views", path.join(__dirname, "views")); // Adjust the path if necessary
+//app.post("/payment-status");
+app.post("/successPayment", order_services_1.verifyReturnUrl);
 app.post("/payTabsWebhook", order_services_1.payTabsWebHook);
 const limiter = (0, express_rate_limit_1.rateLimit)({
     windowMs: 15 * 60 * 1000, // 15 minutes

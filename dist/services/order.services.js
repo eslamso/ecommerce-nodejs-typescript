@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateOrderToDeliver = exports.getOneOrder = exports.getAllOrders = exports.payTabsWebHook = exports.createPayTabsPaymentLink = void 0;
+exports.verifyReturnUrl = exports.updateOrderToDeliver = exports.getOneOrder = exports.getAllOrders = exports.paymentStatus = exports.payTabsWebHook = exports.createPayTabsPaymentLink = void 0;
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const cart_model_1 = __importDefault(require("../models/cart.model"));
 const user_model_1 = __importDefault(require("../models/user.model"));
@@ -80,7 +80,7 @@ exports.createPayTabsPaymentLink = (0, express_async_handler_1.default)((req, re
     let shipping_address = customer_details;
     let url = {
         callback: "https://natoursapp-lu63.onrender.com/payTabsWebhook",
-        response: "https://webhook.site/44a2a603-0dbc-48cd-a01b-15b8529cc098",
+        response: "https://natoursapp-lu63.onrender.com/successPayment",
     };
     let response_URLs = [url.callback, url.response];
     let lang = "ar";
@@ -101,6 +101,57 @@ exports.createPayTabsPaymentLink = (0, express_async_handler_1.default)((req, re
     }
 }));
 exports.payTabsWebHook = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    // verify webhook signature
+    const signatureVerification = (0, payTabs_1.verifyPayTabsWebHookSignature)(req);
+    if (!signatureVerification) {
+        return next(new appError_1.default("illegal attempt", 401));
+    }
+    console.log("hello from web hook");
+    console.log(req.body);
+    console.log("query:", req.query);
+    console.log("params:", req.params);
+    console.log("req.headers:", req.headers);
+    const cart = yield cart_model_1.default.findById(req.body.cart_id);
+    if (!cart) {
+        return next(new appError_1.default("cart not found", 404));
+    }
+    console.log("cart", cart);
+    const user = yield user_model_1.default.findOne({ email: req.body.customer_details.email });
+    const status = req.body.payment_result.response_status;
+    if (status === "A") {
+        // Handle successful payment
+        // logic here (e.g., update database)
+        const price = req.body.cart_amount;
+        const order = yield order_model_1.default.create({
+            user: user._id,
+            cartItems: cart.cartItems,
+            totalOrderPrice: price,
+            isPaid: true,
+            PaidAt: Date.now(),
+            paymentMethod: "online",
+            shippingAddress: {
+                city: req.body.shipping_details.city,
+                details: req.body.shipping_details.street1,
+                state: req.body.shipping_details.state,
+                postalCode: req.body.shipping_details.zip,
+            },
+        });
+        //console.log(cart, user, order);
+        console.log("success payment".bgGreen);
+        cart.cartItems.forEach((item) => __awaiter(void 0, void 0, void 0, function* () {
+            yield product_model_1.default.findByIdAndUpdate(item.product, {
+                $inc: { quantity: -item.quantity, sold: +item.quantity },
+            });
+        }));
+        //5-remove cart
+        yield cart_model_1.default.deleteOne({ _id: cart._id });
+        res.status(200).json({
+            success: true,
+            message: "payment is created successfully",
+        });
+    }
+}));
+exports.paymentStatus = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     // verify webhook signature
     const signatureVerification = (0, payTabs_1.verifyPayTabsWebHookSignature)(req);
     if (!signatureVerification) {
@@ -179,5 +230,15 @@ exports.updateOrderToDeliver = (0, express_async_handler_1.default)((req, res, n
     res.status(200).json({
         success: true,
         order,
+    });
+}));
+exports.verifyReturnUrl = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("hello from verify return url");
+    console.log("req.params", req.params);
+    console.log("req.body", req.body);
+    console.log("req.headers", req.headers);
+    res.status(200).json({
+        success: true,
+        message: "Return url verified successfully",
     });
 }));
