@@ -15,14 +15,17 @@ const app = express();
 app.use(cors());
 app.options("*", cors());
 app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
+app.post("/successPayment", verifyReturnUrl);
 app.use(compression());
 app.use(express.json({ limit: "20Kb" }));
 app.use(express.static(path.join(__dirname, "public")));
+app.set("view engine", "ejs");
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 //app.set("view engine", "ejs");
 //app.set("views", path.join(__dirname, "views")); // Adjust the path if necessary
 //app.post("/payment-status");
-app.post("/successPayment", verifyReturnUrl);
+
 app.post("/payTabsWebhook", payTabsWebHook);
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
